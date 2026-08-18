@@ -431,9 +431,20 @@ $riwayat = $conn->query($riw_sql)->fetch_all(MYSQLI_ASSOC);
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0"><i class="fas fa-box me-2 text-primary"></i>Pilih Produk Fisik</h5>
                     </div>
-                    <div class="input-group mb-3">
-                        <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
-                        <input type="text" class="form-control" id="cariProduk" placeholder="Cari aksesoris, voucher...">
+                    <div class="row g-2 mb-3">
+                        <div class="col-7">
+                            <div class="input-group">
+                                <span class="input-group-text bg-white"><i class="fas fa-search"></i></span>
+                                <input type="text" class="form-control" id="cariProduk" placeholder="Cari nama atau barcode...">
+                            </div>
+                        </div>
+                        <div class="col-5">
+                            <select class="form-select" id="filterKategori">
+                                <option value="">Semua Kategori</option>
+                                <option value="Aksesoris HP">Aksesoris HP</option>
+                                <option value="Voucher Internet">Voucher Internet</option>
+                            </select>
+                        </div>
                     </div>
                     <div class="table-responsive" style="max-height:420px; overflow-y:auto;">
                         <table class="table table-hover table-sm align-middle" id="tblProduk">
@@ -457,6 +468,7 @@ $riwayat = $conn->query($riw_sql)->fetch_all(MYSQLI_ASSOC);
                                             data-id="<?= $p['id'] ?>"
                                             data-nama="<?= htmlspecialchars($p['nama_produk']) ?>"
                                             data-kode="<?= htmlspecialchars($p['kode_produk']) ?>"
+                                            data-kategori="<?= htmlspecialchars($p['kategori']) ?>"
                                             data-harga="<?= floatval($p['harga_jual']) ?>"
                                             data-stok="<?= $p['stok'] ?>">
                                             <td>
@@ -725,15 +737,29 @@ $riwayat = $conn->query($riw_sql)->fetch_all(MYSQLI_ASSOC);
         let keranjang = {};
 
         // Cari Produk Fisik
-        document.getElementById('cariProduk').addEventListener('input', function() {
-            const q = this.value.toLowerCase();
+        // Fungsi Filter Gabungan Teks & Kategori
+        function filterDaftarProduk() {
+            const q = document.getElementById('cariProduk').value.toLowerCase().trim();
+            const kat = document.getElementById('filterKategori').value;
+
             document.querySelectorAll('.produk-row').forEach(row => {
-                row.style.display = (
-                    row.dataset.nama.toLowerCase().includes(q) ||
-                    row.dataset.kode.toLowerCase().includes(q)
-                ) ? '' : 'none';
+                const nama = row.dataset.nama ? row.dataset.nama.toLowerCase() : '';
+                const kode = row.dataset.kode ? row.dataset.kode.toLowerCase() : '';
+                const kategoriRow = row.dataset.kategori || '';
+
+                // Cek kecocokan teks
+                const cocokTeks = (nama.includes(q) || kode.includes(q));
+                // Cek kecocokan kategori
+                const cocokKategori = (kat === '' || kategoriRow === kat);
+
+                // Tampilkan hanya jika teks DAN kategori cocok
+                row.style.display = (cocokTeks && cocokKategori) ? '' : 'none';
             });
-        });
+        }
+
+        // Pasang Event Listener ke Input Teks & Dropdown Kategori
+        document.getElementById('cariProduk').addEventListener('input', filterDaftarProduk);
+        document.getElementById('filterKategori').addEventListener('change', filterDaftarProduk);
 
         // 1. Tambah Produk Fisik ke Keranjang
         document.querySelectorAll('.btnTambahKeranjang').forEach(btn => {
