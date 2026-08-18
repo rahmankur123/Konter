@@ -79,9 +79,9 @@ startFedlySession();
 // ==========================================
 
 define('DB_HOST', 'localhost');
-define('DB_USER', 'root');
-define('DB_PASS', '');
-define('DB_NAME', 'konter_up_level');
+define('DB_USER', 'hospital_konterfedly');
+define('DB_PASS', 'konterfedly1');
+define('DB_NAME', 'hospital_konter');
 
 function getConnection() {
     $conn = new mysqli(DB_HOST, DB_USER, DB_PASS, DB_NAME);
