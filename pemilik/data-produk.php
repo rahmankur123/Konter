@@ -183,6 +183,7 @@ if ($filter_stok === 'tersedia') {
 
 $where_clause = implode(' AND ', $where);
 
+// Ambil data produk
 $sql  = "SELECT p.*, c.Nama_cabang 
          FROM produk p 
          LEFT JOIN Cabang c ON p.Id_cabang = c.id 
@@ -198,7 +199,37 @@ $produks = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
 $stmt->close();
 
 // ============================================================
-// 5. AMBIL DATA MODAL (DETAIL & EDIT)
+// 5. HITUNG STATISTIK TOTAL ASET (BERDASARKAN FILTER CABANG)
+// ============================================================
+$stat_where = "1=1";
+$stat_params = [];
+$stat_types = "";
+if ($filter_cabang && intval($filter_cabang) > 0) {
+    $stat_where .= " AND Id_cabang = ?";
+    $stat_params[] = intval($filter_cabang);
+    $stat_types .= "i";
+}
+
+$sql_stat = "SELECT 
+    COUNT(*) AS total_produk,
+    COALESCE(SUM(stok), 0) AS total_fisik_stok,
+    COALESCE(SUM(harga_beli * stok), 0) AS total_aset_modal,
+    COALESCE(SUM(harga_jual * stok), 0) AS total_nilai_jual,
+    SUM(stok > 0 AND stok < 10) AS stok_menipis,
+    SUM(stok = 0) AS stok_habis
+    FROM produk 
+    WHERE $stat_where";
+
+$stmt_stat = $conn->prepare($sql_stat);
+if (!empty($stat_params)) {
+    $stmt_stat->bind_param($stat_types, ...$stat_params);
+}
+$stmt_stat->execute();
+$stat_aset = $stmt_stat->get_result()->fetch_assoc();
+$stmt_stat->close();
+
+// ============================================================
+// 6. AMBIL DATA MODAL (DETAIL & EDIT)
 // ============================================================
 $detail_produk = null;
 if (!empty($_GET['detail_id']) && (int)$_GET['detail_id'] > 0) {
@@ -242,7 +273,7 @@ function qs($search, $filter_cabang, $filter_kategori, $filter_status, $filter_s
     <link rel="stylesheet" href="../asset/style.css">
 </head>
 
-<body class="mobile-card-tables">
+<body class="kasir-modern mobile-card-tables">
 
     <?php include '../layout/sidebar.php'; ?>
     <?php include '../layout/navbar.php'; ?>
@@ -251,8 +282,8 @@ function qs($search, $filter_cabang, $filter_kategori, $filter_status, $filter_s
     <main class="main-content">
         <div class="mb-4 d-flex justify-content-between align-items-center flex-wrap gap-2">
             <div>
-                <h2 class="fw-bold mb-1">Master Data Produk</h2>
-                <p class="text-muted mb-0">Kelola inventaris barang fisik, voucher, dan layanan saldo di semua cabang</p>
+                <h2 class="fw-bold mb-1">Master Data & Nilai Aset Produk</h2>
+                <p class="text-muted mb-0">Kelola inventaris dan pantau perputaran modal aset produk di seluruh cabang</p>
             </div>
             <div>
                 <button class="btn btn-primary shadow-sm" data-bs-toggle="modal" data-bs-target="#modalTambahProduk">
@@ -267,6 +298,42 @@ function qs($search, $filter_cabang, $filter_kategori, $filter_status, $filter_s
                 <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
             </div>
         <?php endif; ?>
+
+        <!-- KARTU RINGKASAN TOTAL ASET -->
+        <div class="row g-3 mb-4">
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="stats-card purple">
+                    <div class="icon"><i class="fas fa-coins"></i></div>
+                    <h3 style="font-size:1.25rem;"><?= formatRupiah($stat_aset['total_aset_modal']) ?></h3>
+                    <p>Total Nilai Aset (Modal)</p>
+                    <span class="badge bg-dark">&sum; (Harga Modal &times; Stok)</span>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="stats-card green">
+                    <div class="icon"><i class="fas fa-hand-holding-usd"></i></div>
+                    <h3 style="font-size:1.25rem;"><?= formatRupiah($stat_aset['total_nilai_jual']) ?></h3>
+                    <p>Estimasi Nilai Jual</p>
+                    <span class="badge bg-success">&sum; (Harga Jual &times; Stok)</span>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="stats-card blue">
+                    <div class="icon"><i class="fas fa-boxes"></i></div>
+                    <h3><?= number_format($stat_aset['total_fisik_stok']) ?> Item</h3>
+                    <p>Total Fisik Stok</p>
+                    <span class="badge bg-primary"><?= number_format($stat_aset['total_produk']) ?> Varian Produk</span>
+                </div>
+            </div>
+            <div class="col-12 col-sm-6 col-lg-3">
+                <div class="stats-card orange">
+                    <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+                    <h3><?= number_format($stat_aset['stok_menipis']) ?> Produk</h3>
+                    <p>Stok Menipis (&lt;10)</p>
+                    <span class="badge bg-warning text-dark">Kosong: <?= number_format($stat_aset['stok_habis']) ?></span>
+                </div>
+            </div>
+        </div>
 
         <!-- PRODUCT TABLE -->
         <div class="row">
@@ -302,10 +369,11 @@ function qs($search, $filter_cabang, $filter_kategori, $filter_status, $filter_s
                                 </select>
                             </div>
                             <div class="col-md-2">
-                                <select class="form-select" name="filter_status" onchange="this.form.submit()">
-                                    <option value="">Semua Status</option>
-                                    <option value="Aktif" <?= $filter_status === 'Aktif' ? 'selected' : '' ?>>Aktif</option>
-                                    <option value="Nonaktif" <?= $filter_status === 'Nonaktif' ? 'selected' : '' ?>>Nonaktif</option>
+                                <select class="form-select" name="filter_stok" onchange="this.form.submit()">
+                                    <option value="">Semua Status Stok</option>
+                                    <option value="tersedia" <?= $filter_stok === 'tersedia' ? 'selected' : '' ?>>Tersedia (&ge;10)</option>
+                                    <option value="menipis" <?= $filter_stok === 'menipis' ? 'selected' : '' ?>>Menipis (&lt;10)</option>
+                                    <option value="habis" <?= $filter_stok === 'habis' ? 'selected' : '' ?>>Habis (0)</option>
                                 </select>
                             </div>
                             <div class="col-md-2 d-flex gap-1">
@@ -324,9 +392,10 @@ function qs($search, $filter_cabang, $filter_kategori, $filter_status, $filter_s
                                     <th>Nama Produk</th>
                                     <th>Cabang</th>
                                     <th>Kategori</th>
-                                    <th>Modal</th>
+                                    <th>Modal Beli</th>
                                     <th>Harga Jual</th>
                                     <th>Stok</th>
+                                    <th>Subtotal Aset</th>
                                     <th>Status</th>
                                     <th class="text-center">Aksi</th>
                                 </tr>
@@ -334,14 +403,17 @@ function qs($search, $filter_cabang, $filter_kategori, $filter_status, $filter_s
                             <tbody>
                                 <?php if (empty($produks)): ?>
                                     <tr>
-                                        <td colspan="10" class="text-center text-muted py-4">
+                                        <td colspan="11" class="text-center text-muted py-4">
                                             <i class="fas fa-box-open fa-2x mb-2 d-block"></i>
                                             Tidak ada data produk yang sesuai.
                                         </td>
                                     </tr>
                                 <?php else: ?>
                                     <?php foreach ($produks as $i => $p): ?>
-                                        <?php $q = qs($search, $filter_cabang, $filter_kategori, $filter_status, $filter_stok); ?>
+                                        <?php 
+                                        $q = qs($search, $filter_cabang, $filter_kategori, $filter_status, $filter_stok); 
+                                        $subtotal_aset = $p['harga_beli'] * $p['stok'];
+                                        ?>
                                         <tr>
                                             <td><?= $i + 1 ?></td>
                                             <td><code><?= htmlspecialchars($p['kode_produk']) ?></code></td>
@@ -366,6 +438,7 @@ function qs($search, $filter_cabang, $filter_kategori, $filter_status, $filter_s
                                                     <span class="badge bg-success"><?= $p['stok'] ?> <?= $p['satuan'] ?></span>
                                                 <?php endif; ?>
                                             </td>
+                                            <td class="fw-bold text-success"><?= formatRupiah($subtotal_aset) ?></td>
                                             <td>
                                                 <span class="badge <?= $p['status'] === 'Aktif' ? 'bg-success' : 'bg-danger' ?>">
                                                     <?= htmlspecialchars($p['status']) ?>
@@ -632,8 +705,12 @@ function qs($search, $filter_cabang, $filter_kategori, $filter_status, $filter_s
                             <div class="col-8 text-primary fw-bold"><?= formatRupiah($detail_produk['harga_jual']) ?></div>
                         </div>
                         <div class="row mb-2">
-                            <div class="col-4 fw-bold">Stok:</div>
+                            <div class="col-4 fw-bold">Stok Tersedia:</div>
                             <div class="col-8"><strong><?= $detail_produk['stok'] ?> <?= htmlspecialchars($detail_produk['satuan']) ?></strong></div>
+                        </div>
+                        <div class="row mb-2">
+                            <div class="col-4 fw-bold">Nilai Aset:</div>
+                            <div class="col-8 text-success fw-bold"><?= formatRupiah($detail_produk['harga_beli'] * $detail_produk['stok']) ?></div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-4 fw-bold">Status:</div>

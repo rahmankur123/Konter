@@ -138,10 +138,10 @@ $kasir_summary = $conn->query($sql_kasir)->fetch_all(MYSQLI_ASSOC);
     <link rel="stylesheet" href="../asset/style.css">
 </head>
 
-<body class="mobile-card-tables">
+<body class="kasir-modern mobile-card-tables">
 
-    <?php include '../layout/sidebar.php'; ?>[cite: 4]
-    <?php include '../layout/navbar.php'; ?>[cite: 4]
+    <?php include '../layout/sidebar.php'; ?>
+    <?php include '../layout/navbar.php'; ?>
     <div class="overlay" id="overlay"></div>
 
     <main class="main-content">
@@ -157,8 +157,8 @@ $kasir_summary = $conn->query($sql_kasir)->fetch_all(MYSQLI_ASSOC);
                 </p>
             </div>
             <div class="d-flex gap-2">
-                <a href="rekening.php" class="btn btn-outline-primary shadow-sm"><i class="fas fa-wallet me-2"></i>Kelola Saldo</a>[cite: 4]
-                <a href="laporan.php" class="btn btn-primary shadow-sm"><i class="fas fa-file-invoice-dollar me-2"></i>Laporan Lengkap</a>[cite: 4]
+                <a href="rekening.php" class="btn btn-outline-primary shadow-sm"><i class="fas fa-wallet me-2"></i>Kelola Saldo</a>
+                <a href="laporan.php" class="btn btn-primary shadow-sm"><i class="fas fa-file-invoice-dollar me-2"></i>Laporan Lengkap</a>
             </div>
         </div>
 
@@ -206,7 +206,7 @@ $kasir_summary = $conn->query($sql_kasir)->fetch_all(MYSQLI_ASSOC);
 
             <!-- Stok Menipis -->
             <div class="col-12 col-sm-6 col-lg-3">
-                <a href="../pemilik/data-produk.php?filter_stok=menipis" class="stats-card-link text-decoration-none" title="Lihat produk stok hampir habis">[cite: 4]
+                <a href="../pemilik/data-produk.php?filter_stok=menipis" class="stats-card-link text-decoration-none" title="Lihat produk stok hampir habis">
                     <div class="stats-card yellow">
                         <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
                         <h3><?= number_format($stok_menipis) ?></h3>
@@ -218,7 +218,7 @@ $kasir_summary = $conn->query($sql_kasir)->fetch_all(MYSQLI_ASSOC);
 
             <!-- Stok Habis -->
             <div class="col-12 col-sm-6 col-lg-3">
-                <a href="../pemilik/data-produk.php?filter_stok=habis" class="stats-card-link text-decoration-none" title="Lihat produk stok habis">[cite: 4]
+                <a href="../pemilik/data-produk.php?filter_stok=habis" class="stats-card-link text-decoration-none" title="Lihat produk stok habis">
                     <div class="stats-card red">
                         <div class="icon"><i class="fas fa-ban"></i></div>
                         <h3><?= number_format($stok_habis) ?></h3>
@@ -262,7 +262,7 @@ $kasir_summary = $conn->query($sql_kasir)->fetch_all(MYSQLI_ASSOC);
                 <div class="table-container">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <h5 class="mb-0"><i class="fas fa-receipt me-2 text-primary"></i>Transaksi Terbaru</h5>
-                        <a href="laporan.php" class="btn btn-sm btn-outline-primary">Lihat Semua Laporan</a>[cite: 4]
+                        <a href="laporan.php" class="btn btn-sm btn-outline-primary">Lihat Semua Laporan</a>
                     </div>
                     <div class="table-responsive">
                         <table class="table table-hover table-sm align-middle">

@@ -175,7 +175,7 @@ $total_saldo = array_sum(array_column($rekenings, 'Saldo'));
     <link rel="stylesheet" href="../asset/style.css">
 </head>
 
-<body class="mobile-card-tables">
+<body class="kasir-modern mobile-card-tables">
 
     <?php include '../layout/sidebar.php'; ?>[cite: 4]
     <?php include '../layout/navbar.php'; ?>[cite: 4]

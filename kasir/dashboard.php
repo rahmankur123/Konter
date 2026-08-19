@@ -115,8 +115,8 @@ $stmt_t->close();
 
 <body class="kasir-modern dashboard-page mobile-card-tables">
 
-    <?php include '../layout/sidebar.php'; ?>[cite: 4]
-    <?php include '../layout/navbar.php'; ?>[cite: 4]
+    <?php include '../layout/sidebar.php'; ?>
+    <?php include '../layout/navbar.php'; ?>
     <div class="overlay" id="overlay"></div>
 
     <main class="main-content">
@@ -157,7 +157,7 @@ $stmt_t->close();
                 </div>
             </div>
             <div class="col-12 col-sm-6 col-lg-3">
-                <a href="../kasir/data-produk.php?filter_stok=menipis" class="stats-card-link text-decoration-none" title="Lihat produk stok hampir habis">[cite: 4]
+                <a href="../kasir/data-produk.php?filter_stok=menipis" class="stats-card-link text-decoration-none" title="Lihat produk stok hampir habis">
                     <div class="stats-card yellow">
                         <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
                         <h3><?= number_format($stok_menipis) ?></h3>
@@ -167,7 +167,7 @@ $stmt_t->close();
                 </a>
             </div>
             <div class="col-12 col-sm-6 col-lg-3">
-                <a href="../kasir/data-produk.php?filter_stok=habis" class="stats-card-link text-decoration-none" title="Lihat produk stok habis">[cite: 4]
+                <a href="../kasir/data-produk.php?filter_stok=habis" class="stats-card-link text-decoration-none" title="Lihat produk stok habis">
                     <div class="stats-card red">
                         <div class="icon"><i class="fas fa-ban"></i></div>
                         <h3><?= number_format($stok_habis) ?></h3>

@@ -131,7 +131,7 @@ $stmt->close();
     <link rel="stylesheet" href="../asset/style.css">
 </head>
 
-<body class="mobile-card-tables">
+<body class="kasir-modern mobile-card-tables">
 
     <?php include '../layout/sidebar.php'; ?>
     <?php include '../layout/navbar.php'; ?>

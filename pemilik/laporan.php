@@ -213,7 +213,7 @@ if (isset($_GET['export']) && $_GET['export'] === 'csv') {
     </style>
 </head>
 
-<body class="mobile-card-tables">
+<body class="kasir-modern mobile-card-tables">
 
     <?php include '../layout/sidebar.php'; ?>
     <?php include '../layout/navbar.php'; ?>
